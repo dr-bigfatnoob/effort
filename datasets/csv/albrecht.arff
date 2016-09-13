@@ -36,6 +36,10 @@
 %		Adjustment for Analogy Based Software Cost Estimation.
 %		Empirical Software Engineering. 14(6), 603-643.
 
+%   Decisions=[Input, Output, Inquiry, File, AdjFP]
+%   Objectives=[Effort]
+%   Removed = None
+
 @relation albrecht
 
 @attribute Input numeric

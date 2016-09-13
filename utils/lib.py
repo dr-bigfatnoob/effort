@@ -11,6 +11,11 @@ EPS = 0.000001
 
 
 # Utility Functions
+def say(*lst):
+  print(*lst, end="")
+  sys.stdout.flush()
+
+
 def gt(a, b): return a > b
 
 

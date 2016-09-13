@@ -59,12 +59,9 @@ class Dataset(O):
 
 def read_csv(file_path, read_header=False):
   lst = []
-  header = None
   with open(file_path) as f:
     csv_f = csv.reader(f)
     for row in csv_f:
-      if header is None:
-        header = row
       lst.append(row)
   if read_header:
     return lst
