@@ -485,8 +485,6 @@ Driver for the demos:
 def rdivDemo(data):
   def z(x):
     return int(100 * (x - lo) / (hi - lo + 0.00001))
-  def kill_outliers(lst, median):
-    return [x for x in lst if x < 4*median]
   data = map(lambda lst:Num(lst[0],lst[1:]),
              data)
   ranks=[]
@@ -498,7 +496,6 @@ def rdivDemo(data):
   all=[]
   for _,__,___,x in sorted(ranks): all += x.all
   all = sorted(all)
-  #all = kill_outliers(sorted(all),maxMedian)
   lo, hi = all[0], all[-1]
   line = "----------------------------------------------------"
   last = None

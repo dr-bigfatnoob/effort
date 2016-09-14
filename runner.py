@@ -19,7 +19,8 @@ from utils.errors import *
 from utils import sk
 
 datasets = [Albrecht, China, Desharnais, Maxwell, Miyazaki]
-error = mre
+# datasets = [Maxwell]
+error = msae
 
 
 def run():
@@ -32,15 +33,15 @@ def run():
                     "KNN3": N()}
     for score in model_scores.values():
       score.go = True
-    for row, rest in loo(dataset.get_rows()):
+    for test, rest in kfold(dataset.get_rows(), 3):
       say(".")
-      desired_effort = [dataset.effort(row[0])]
+      desired_effort = [dataset.effort(row) for row in test]
       all_efforts = [dataset.effort(one) for one in rest]
-      model_scores["PEEKING"] += error(desired_effort, peeking2(dataset, row, rest), all_efforts)
-      model_scores["CART"] += error(desired_effort, cart(dataset, row, rest), all_efforts)
-      model_scores["TEAK"] += error(desired_effort, teak(dataset, row, rest), all_efforts)
-      model_scores["KNN1"] += error(desired_effort, knn_1(dataset, row, rest), all_efforts)
-      model_scores["KNN3"] += error(desired_effort, knn_3(dataset, row, rest), all_efforts)
+      model_scores["PEEKING"] += error(desired_effort, peeking2(dataset, test, rest), all_efforts)
+      model_scores["CART"] += error(desired_effort, cart(dataset, test, rest), all_efforts)
+      model_scores["TEAK"] += error(desired_effort, teak(dataset, test, rest), all_efforts)
+      model_scores["KNN1"] += error(desired_effort, knn_1(dataset, test, rest), all_efforts)
+      model_scores["KNN3"] += error(desired_effort, knn_3(dataset, test, rest), all_efforts)
     sk_data = [[key] + n.cache.all for key, n in model_scores.items()]
     print("\n### %s (%d projects, %d decisions)" %
           (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))

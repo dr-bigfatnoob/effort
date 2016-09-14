@@ -24,18 +24,6 @@ def rel_error(*args):
   return args[1] - args[0]
 
 
-def sa(*args):
-  """
-  Shepperd and MacDonell's standardized error.
-  SA = 1 - MAR/MARp0
-  :param args: [actual, predicted, vector]
-  :return: SA
-  """
-  mar = abs(args[0] - args[1])
-  mar_p0 = sum([abs(choice(args[2]) - args[0]) for _ in range(1000)]) / 1000
-  return mar / mar_p0
-
-
 def mre(*args):
   """
   Mean Relative Error
@@ -50,14 +38,23 @@ def mre(*args):
 
 def msa(*args):
   """
-  Mean Standard Accuracy Error
+  Mean Standard Accuracy
   :param args: [[actual vals], [predicted vals], [all effort]]
   :return:
   """
-  errors = []
-  for actual, predicted in zip(args[0], args[1]):
-    errors.append(sa(actual, predicted, args[2]))
-  return np.mean(errors)
+  assert len(args[0]) == len(args[1])
+  mae = sum([abs(actual - predicted) for actual, predicted in zip(args[0], args[1])]) / len(args[0])
+  mae_guess = sum([abs(choice(args[0]) - choice(args[2])) for _ in range(1000)]) / 1000
+  return 1 - mae / mae_guess
+
+
+def msae(*args):
+  """
+  Mean Standardized Accuracy Error
+  :param args:
+  :return:
+  """
+  return 1 - msa(*args)
 
 
 def re_star(*args):
