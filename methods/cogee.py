@@ -5,10 +5,39 @@ sys.path.append(os.path.abspath("."))
 sys.dont_write_bytecode = True
 
 from utils.lib import *
+from math import sqrt
+import numpy as np
+import scipy.stats as stats
 
 
 def rand():
   return random.uniform(0, 1e6)
+
+
+def absolute_errors(actuals, estimated):
+  return [abs(a - e) for a, e in zip(actuals, estimated)]
+
+
+def confidence(x, n, k, p):
+  """
+  Compute Confidence based on Student's t-quantiles
+  :param x: array
+  :param n: number of samples
+  :param k: number of parameters
+  :param p: confidence
+  :return: value from array
+  """
+  x_s = sorted(x)
+  df = n - k
+  t_dist = stats.t.cdf(x_s, df)
+  phi = None
+  for x_i, t_i in zip(x_s, t_dist):
+    if t_i > p:
+      phi = x_i
+      break
+  if phi is None:
+    phi = x_s[-1]
+  return phi * np.std(x) / sqrt(n)
 
 
 class Operator(O):
@@ -16,7 +45,8 @@ class Operator(O):
   Class indicating an operator(+, -, *)
   """
   def __init__(self, sym):
-    O.__init__(self, sym=sym)
+    O.__init__(self)
+    self.sym = sym
 
   def op(self, a, b):
     assert False
@@ -70,13 +100,16 @@ class Variable(O):
 
 
 class Point(O):
-  def __init__(self, sequence):
+  def __init__(self, sequence, dataset, rows):
     O.__init__(self)
     self.sequence = sequence
+    self.objectives = None
+    self._dataset = dataset
+    self._rows = rows
 
-  def evaluate_row(self, problem, row):
+  def evaluate_row(self, row):
     string = ""
-    for i, meta in enumerate(problem.dec_meta):
+    for i, meta in enumerate(self._dataset.dec_meta):
       string += str(self.sequence[4 * i].value)
       string += str(self.sequence[4 * i + 1].sym)
       string += str(row.cells[i])
@@ -84,8 +117,18 @@ class Point(O):
     string += str(self.sequence[-1].value)
     return eval(string)
 
-  def evaluate_rows(self, problem, rows):
-    return [self.evaluate_row(problem, row) for row in rows]
+  def evaluate_rows(self):
+    return [self.evaluate_row(row) for row in self._rows]
+
+  def compute_objectives(self):
+    if self.objectives is None:
+      actuals = [self._dataset.effort(row) for row in self._rows]
+      computed = self.evaluate_rows()
+      errors = absolute_errors(actuals, computed)
+      sae = sum(errors)
+      conf = confidence(errors, len(self._rows), len(self._dataset.dec_meta)+1, 0.95)
+      self.objectives = [sae, conf]
+    return self.objectives
 
 
 class COGEE(O):
@@ -106,9 +149,17 @@ class COGEE(O):
       sequence.append(Variable(meta.name))
       sequence.append(random.choice(COGEE.operators))
     sequence.append(Constant(rand()))
-    return Point(sequence)
+    return Point(sequence, self.dataset, self.rows)
 
+  def populate(self, pop_size):
+    points = []
+    for _ in range(pop_size):
+      points.append(self.generate_one())
+    return points
 
-
-
-
+  def run(self, pop_size=100, gens=100):
+    gen = 0
+    population = self.populate(pop_size)
+    while gen < gens:
+      gen += 1
+    print(population[0].compute_objectives())

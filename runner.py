@@ -55,5 +55,4 @@ def run():
 from methods.cogee import COGEE
 dataset = Albrecht()
 cogee = COGEE(dataset, dataset.get_rows())
-point = cogee.generate_one()
-print(point.evaluate_row(dataset, dataset.get_rows()[0]))
+cogee.run()
