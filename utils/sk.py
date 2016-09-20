@@ -505,8 +505,9 @@ def rdivDemo(data):
     q1,q2,q3 = x.quartiles()
     #xtile(x.all,lo=lo,hi=hi,width=30,show="%5.2f")
     print  ('%1s , %22s , %4s , %4s ' % \
-                 (x.rank+1, x.name, q2, q3 - q1))  + \
-              xtile(x,lo=lo,hi=hi,width=30,show="%5.2f")
+                 (x.rank+1, x.name, q2, q3 - q1))  \
+           # + \
+           #    xtile(x,lo=lo,hi=hi,width=30,show="%5.2f")
     last = x.rank 
 """
 

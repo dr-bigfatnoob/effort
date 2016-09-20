@@ -15,11 +15,12 @@ from methods.peeking import peeking2
 from methods.cart import cart
 from methods.teak import teak
 from methods.knn import knn_1, knn_3
+from methods.cogee import cogee
 from utils.errors import *
 from utils import sk
 
 datasets = [Albrecht, China, Desharnais, Maxwell, Miyazaki]
-# datasets = [Maxwell]
+# datasets = [Albrecht]
 error = msae
 
 
@@ -30,7 +31,8 @@ def run():
                     "PEEKING": N(),
                     "TEAK": N(),
                     "KNN1": N(),
-                    "KNN3": N()}
+                    "KNN3": N(),
+                    "COGEE": N()}
     for score in model_scores.values():
       score.go = True
     for test, rest in kfold(dataset.get_rows(), 3):
@@ -42,6 +44,7 @@ def run():
       model_scores["TEAK"] += error(desired_effort, teak(dataset, test, rest), all_efforts)
       model_scores["KNN1"] += error(desired_effort, knn_1(dataset, test, rest), all_efforts)
       model_scores["KNN3"] += error(desired_effort, knn_3(dataset, test, rest), all_efforts)
+      model_scores["COGEE"] += error(desired_effort, cogee(dataset, test, rest), all_efforts)
     sk_data = [[key] + n.cache.all for key, n in model_scores.items()]
     print("\n### %s (%d projects, %d decisions)" %
           (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
@@ -50,9 +53,5 @@ def run():
     print("```")
     print("")
 
-# run()
-
-from methods.cogee import COGEE
-dataset = Albrecht()
-cogee = COGEE(dataset, dataset.get_rows())
-cogee.run()
+run()
+#
