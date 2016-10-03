@@ -89,3 +89,6 @@ ENV/
 .ropeproject
 
 .idea/
+
+# Mac
+.DS_Store
