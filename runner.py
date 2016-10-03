@@ -24,7 +24,7 @@ datasets = [Albrecht, China, Desharnais, Maxwell, Miyazaki]
 error = msae
 
 
-def run():
+def run(reps = 1):
   for dataset_class in datasets:
     dataset = dataset_class()
     model_scores = {"CART": N(),
@@ -35,16 +35,17 @@ def run():
                     "COGEE": N()}
     for score in model_scores.values():
       score.go = True
-    for test, rest in kfold(dataset.get_rows(), 3):
-      say(".")
-      desired_effort = [dataset.effort(row) for row in test]
-      all_efforts = [dataset.effort(one) for one in rest]
-      model_scores["PEEKING"] += error(desired_effort, peeking2(dataset, test, rest), all_efforts)
-      model_scores["CART"] += error(desired_effort, cart(dataset, test, rest), all_efforts)
-      model_scores["TEAK"] += error(desired_effort, teak(dataset, test, rest), all_efforts)
-      model_scores["KNN1"] += error(desired_effort, knn_1(dataset, test, rest), all_efforts)
-      model_scores["KNN3"] += error(desired_effort, knn_3(dataset, test, rest), all_efforts)
-      model_scores["COGEE"] += error(desired_effort, cogee(dataset, test, rest), all_efforts)
+    for _ in xrange(reps):
+      for test, rest in kfold(dataset.get_rows(), 3, shuffle=True):
+        say(".")
+        desired_effort = [dataset.effort(row) for row in test]
+        all_efforts = [dataset.effort(one) for one in rest]
+        model_scores["PEEKING"] += error(desired_effort, peeking2(dataset, test, rest), all_efforts)
+        model_scores["CART"] += error(desired_effort, cart(dataset, test, rest), all_efforts)
+        model_scores["TEAK"] += error(desired_effort, teak(dataset, test, rest), all_efforts)
+        model_scores["KNN1"] += error(desired_effort, knn_1(dataset, test, rest), all_efforts)
+        model_scores["KNN3"] += error(desired_effort, knn_3(dataset, test, rest), all_efforts)
+        model_scores["COGEE"] += error(desired_effort, cogee(dataset, test, rest), all_efforts)
     sk_data = [[key] + n.cache.all for key, n in model_scores.items()]
     print("\n### %s (%d projects, %d decisions)" %
           (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
@@ -53,5 +54,5 @@ def run():
     print("```")
     print("")
 
-run()
+run(5)
 #
