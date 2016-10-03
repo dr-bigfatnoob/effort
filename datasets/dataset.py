@@ -54,6 +54,8 @@ class Dataset(O):
     return row.cells[self.obj_meta[0].index]
 
   def effort_variance(self, rows):
+    if rows is None or len(rows) == 0:
+      return np.inf
     return np.var([self.effort(row) for row in rows])
 
 

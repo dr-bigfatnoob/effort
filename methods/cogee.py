@@ -5,119 +5,12 @@ sys.path.append(os.path.abspath("."))
 sys.dont_write_bytecode = True
 
 from utils.lib import *
-from math import sqrt
-from collections import OrderedDict
-import numpy as np
-import scipy.stats as stats
-import bisect
+from utils.errors import absolute_errors, confidence
+from optimizer.nsga2 import nsga2, NSGAPoint, make_roulette_map, roulette_wheel
 
 
 def rand():
   return random.uniform(0, 1e3)
-
-
-def absolute_errors(actuals, estimated):
-  return [abs(a - e) for a, e in zip(actuals, estimated)]
-
-
-def confidence(x, n, k, p):
-  """
-  Compute Confidence based on Student's t-quantiles
-  :param x: array
-  :param n: number of samples
-  :param k: number of parameters
-  :param p: confidence
-  :return: value from array
-  """
-  x_s = sorted(x)
-  df = n - k
-  t_dist = stats.t.cdf(x_s, df)
-  phi = None
-  for x_i, t_i in zip(x_s, t_dist):
-    if t_i > p:
-      phi = x_i
-      break
-  if phi is None:
-    phi = x_s[-1]
-  return phi * np.std(x) / sqrt(n)
-
-
-def loo(points):
-  for i in range(len(points)):
-    yield points[i], points[:i] + points[i+1:]
-
-
-def nsga2(points):
-  frontiers = []
-  front1 = []
-  for one, rest in loo(points):
-    one.dominated = []
-    one.dominating = 0
-    for two in rest:
-      if one.dominates(two):
-        one.dominated.append(two)
-      elif two.dominates(one):
-        one.dominating += 1
-    if one.dominating == 0:
-      front1.append(one)
-  frontiers.append(assign_crowd_distance(front1))
-  while True:
-    front2 = []
-    for one in front1:
-      for two in one.dominated:
-        two.dominating -= 1
-        if two.dominating == 0:
-          front2.append(two)
-    if len(front2) == 0:
-      break
-    frontiers.append(assign_crowd_distance(front2))
-    front1 = front2
-  i = 0
-  total = len(points)
-  sorted_points = []
-  for front in frontiers:
-    for point in front:
-      point.score = 2 * (total - i) / (total * (total + 1))
-      sorted_points.append(point)
-      i += 1
-  return sorted_points
-
-
-def assign_crowd_distance(frontier):
-  """
-  Crowding distance between each point in frontier
-  :param frontier: List of points
-  :return:
-  """
-  l = len(frontier)
-  assert l > 0
-  for m in range(len(frontier[0].objectives)):
-    frontier = sorted(frontier, key=lambda x: x.objectives[m])
-    frontier[0].crowd_distance = float("inf")
-    frontier[-1].crowd_distance = float("inf")
-    for i in range(1, l-1):
-      frontier[i].crowd_distance += frontier[i+1].objectives[m] - frontier[i-1].objectives[m]
-  return sorted(frontier, key=lambda x: x.crowd_distance)
-
-
-def make_roulette_map(population, is_sorted=True):
-  if not sorted:
-    population = sorted(population, key=lambda x:x.score, reverse=True)
-  r_map = OrderedDict()
-  cum = 0.0
-  for point in population:
-    cum += point.score
-    r_map[cum] = point
-  return r_map
-
-
-def roulette_wheel(roulette_map, number):
-  chosen = []
-  for _ in xrange(number):
-    r = random.random()
-    index = bisect.bisect(roulette_map.keys(), r)
-    chosen.append(roulette_map[roulette_map.keys()[index - 1]])
-  return chosen
 
 
 class Operator(O):
@@ -144,8 +37,7 @@ class Operator(O):
     if sel == '+': return Add()
     elif sel == '-': return Subtract()
     elif sel == '*': return Multiply()
-    else: raise RuntimeError("Invalid symbol : %s"%sel)
-
+    else: raise RuntimeError("Invalid symbol : %s" % sel)
 
 
 class Add(Operator):
@@ -185,7 +77,7 @@ class Constant(O):
 
   def mutate(self):
     r = rand()
-    while r==self.value:
+    while r == self.value:
       r = rand()
     return Constant(rand())
 
@@ -198,18 +90,13 @@ class Variable(O):
     return self
 
 
-class Point(O):
+class CogeePoint(NSGAPoint):
   def __init__(self, sequence, dataset, rows, better=(lt, lt)):
-    O.__init__(self)
-    self.sequence = sequence
-    self.objectives = None
+    NSGAPoint.__init__(self, sequence)
+    self.sequence = self.decisions
     self._dataset = dataset
     self._rows = rows
     self.better = better
-    self.dominating = 0
-    self.dominated = []
-    self.crowd_distance = 0.0
-    self.score = 0.0
 
   def evaluate_row(self, row):
     string = ""
@@ -235,11 +122,11 @@ class Point(O):
     return self.objectives
 
   def clone(self):
-    new = Point(self.sequence, self._dataset, self._rows)
+    new = CogeePoint(self.sequence, self._dataset, self._rows)
     new.objectives = self.objectives
     return new
 
-  def dominates(self, another):
+  def dominates(self, another, problem):
     assert self.objectives is not None
     assert another.objectives is not None
     better = False
@@ -269,7 +156,7 @@ class COGEE(O):
       sequence.append(Variable(meta.name))
       sequence.append(random.choice(COGEE.operators))
     sequence.append(Constant(rand()))
-    return Point(sequence, self.dataset, self.rows)
+    return CogeePoint(sequence, self.dataset, self.rows)
 
   def populate(self, pop_size):
     points = []
@@ -290,14 +177,14 @@ class COGEE(O):
     if r <= cr:
       l = len(mom.sequence)
       split = random.randint(0, l - 1)
-      bro = Point(mom.sequence[:split] + dad.sequence[split:], self.dataset, self.rows)
-      sis = Point(dad.sequence[:split] + mom.sequence[split:], self.dataset, self.rows)
+      bro = CogeePoint(mom.sequence[:split] + dad.sequence[split:], self.dataset, self.rows)
+      sis = CogeePoint(dad.sequence[:split] + mom.sequence[split:], self.dataset, self.rows)
       for i in xrange(l):
         r = random.random()
-        if r < random.random():
+        if r < mr:
           bro.sequence[i] = bro.sequence[i].mutate()
         r = random.random()
-        if r < random.random():
+        if r < mr:
           sis.sequence[i] = sis.sequence[i].mutate()
       return [bro, sis]
     else:
@@ -308,8 +195,7 @@ class COGEE(O):
     population = self.populate(pop_size)
     [point.compute_objectives() for point in population]
     while gen < gens:
-      # say(len(population), ".")
-      population = nsga2(population)
+      population = nsga2(None, population)
       roulette_map = make_roulette_map(population)
       children = []
       for _ in xrange(len(population)):
@@ -322,7 +208,7 @@ class COGEE(O):
         children += kids
       population += children
       [point.compute_objectives() for point in population]
-      population = nsga2(population)[:retain_size]
+      population = nsga2(None, population)[:retain_size]
       gen += 1
     return population[0]
 

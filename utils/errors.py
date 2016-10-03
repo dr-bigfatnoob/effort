@@ -6,6 +6,8 @@ sys.dont_write_bytecode = True
 
 from random import choice
 import numpy as np
+from math import sqrt
+import scipy.stats as stats
 
 
 def rae(*args):
@@ -70,3 +72,29 @@ def re_star(*args):
     return np.var(residuals) / np.var(args[1])
   else:
     return residuals[0] / args[1][0]
+
+
+def absolute_errors(actuals, estimated):
+  return [abs(a - e) for a, e in zip(actuals, estimated)]
+
+
+def confidence(x, n, k, p):
+  """
+  Compute Confidence based on Student's t-quantiles
+  :param x: array
+  :param n: number of samples
+  :param k: number of parameters
+  :param p: confidence
+  :return: value from array
+  """
+  x_s = sorted(x)
+  df = n - k
+  t_dist = stats.t.cdf(x_s, df)
+  phi = None
+  for x_i, t_i in zip(x_s, t_dist):
+    if t_i > p:
+      phi = x_i
+      break
+  if phi is None:
+    phi = x_s[-1]
+  return phi * np.std(x) / sqrt(n)

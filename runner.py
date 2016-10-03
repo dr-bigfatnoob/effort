@@ -24,7 +24,7 @@ datasets = [Albrecht, China, Desharnais, Maxwell, Miyazaki]
 error = msae
 
 
-def run(reps = 1):
+def run(reps=1):
   for dataset_class in datasets:
     dataset = dataset_class()
     model_scores = {"CART": N(),

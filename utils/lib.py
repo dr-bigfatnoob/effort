@@ -47,6 +47,10 @@ def median_iqr(lst, ordered=False):
     return (lst[p] + lst[q]) * 0.5, iqr
 
 
+def uniform(low, high):
+  return random.uniform(low, high)
+
+
 # Utility Classes
 class O:
   """

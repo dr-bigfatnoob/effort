@@ -24,11 +24,15 @@ def build(dataset, rows=None, **params):
   for leaf in leaves:
     if (leaf.variance < a * leaf.parent.variance) and (leaf.variance < b * max_var):
       pruned_rows += leaf.get_rows()
+  if len(pruned_rows) == 0:
+    return None
   return where.build(dataset, pruned_rows, **settings.has())
 
 
-def teak(dataset, test, train):
-  node = build(dataset, train)
+def teak(dataset, test, train, **params):
+  node = build(dataset, train, **params)
+  if node is None:
+    return None
   predicts = []
   for test_row in test:
     test_leaf = where.get_leaf(dataset, test_row, node)
