@@ -89,9 +89,21 @@ class TeakOptimize(O):
     return population
 
 
+def teak_optimize(dataset, test, rest):
+  cut = int(0.75 * len(rest))
+  random.shuffle(rest)
+  train, tune = rest[:cut], rest[cut:]
+  problem = TeakProblem(dataset, train, tune, test)
+  optimizer = TeakOptimize(problem)
+  best = optimizer.run()
+  return problem.predict(best[0])
+
+
+@timing
 def _main():
   from datasets.albrecht import Albrecht
   from datasets.maxwell import Maxwell
+  from datasets.china import China
   from utils.validation import kfold
   dataset = Maxwell()
   for test, rest in kfold(dataset.get_rows(), 3):
@@ -107,7 +119,6 @@ def _main():
     err1 = sum(absolute_errors(actuals, pred1))
     err2 = sum(absolute_errors(actuals, pred2))
     print(err1, err2)
-    exit()
 
 if __name__ == "__main__":
   _main()

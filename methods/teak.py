@@ -25,14 +25,16 @@ def build(dataset, rows=None, **params):
     if (leaf.variance < a * leaf.parent.variance) and (leaf.variance < b * max_var):
       pruned_rows += leaf.get_rows()
   if len(pruned_rows) == 0:
-    return None
+    # All rows are recommended to be pruned,
+    # thus we default to regular WHERE
+    return root_node
   return where.build(dataset, pruned_rows, **settings.has())
 
 
 def teak(dataset, test, train, **params):
   node = build(dataset, train, **params)
   if node is None:
-    return None
+    assert False, "Node is None"
   predicts = []
   for test_row in test:
     test_leaf = where.get_leaf(dataset, test_row, node)

@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath("."))
 sys.dont_write_bytecode = True
 
 import random
+import time
 
 # Constants
 EPS = 0.000001
@@ -51,13 +52,27 @@ def uniform(low, high):
   return random.uniform(low, high)
 
 
+def timing(f):
+  def wrap(*args):
+    time1 = time.time()
+    ret = f(*args)
+    time2 = time.time()
+    print('%s function took %0.3f ms' % (f.func_name, (time2 - time1) * 1000.0))
+    return ret
+  return wrap
+
+
 # Utility Classes
 class O:
   """
   Basic Class. All classes in this project
   should directly or indirectly extend this class
   """
+  id = 0
+
   def __init__(self, **d):
+    O.id += 1
+    self.id = O.id
     self.has().update(**d)
 
   def has(self):

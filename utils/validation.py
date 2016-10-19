@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath("."))
 sys.dont_write_bytecode = True
 
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 import numpy as np
 
 
@@ -43,7 +43,6 @@ def kfold(dataset, n_folds, shuffle=False, random_state=1):
   :return:
   """
   dataset_np = np.array(dataset)
-  size = len(dataset)
-  kf = KFold(size, n_folds, shuffle=shuffle, random_state=random_state)
-  for train_index, test_index in kf:
+  kf = KFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
+  for train_index, test_index in kf.split(dataset_np):
     yield dataset_np[test_index].tolist(), dataset_np[train_index].tolist()

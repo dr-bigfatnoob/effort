@@ -10,7 +10,7 @@ from optimizer.nsga2 import nsga2, NSGAPoint, make_roulette_map, roulette_wheel
 
 
 def rand():
-  return random.uniform(0, 1e3)
+  return random.uniform(-1e2, 1e2)
 
 
 class Operator(O):

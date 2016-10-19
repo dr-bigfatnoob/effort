@@ -37,6 +37,9 @@ def normalize(dataset, index, value):
 
 
 def distance(dataset, one, two):
+  dist = dataset.get_distance(one, two)
+  if dist is not None:
+    return dist
   n = len(one.cells)
   dist = 0
   for index, meta in enumerate(dataset.dec_meta):
@@ -47,7 +50,9 @@ def distance(dataset, one, two):
     else:
       if one.cells[index] != two.cells[index]:
         dist += 1
-  return (dist / n)**0.5
+  dist = (dist / n)**0.5
+  dataset.set_distance(one, two, dist)
+  return dist
 
 
 def furthest(dataset, row, rows, init=0, better=gt):

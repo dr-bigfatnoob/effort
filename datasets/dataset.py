@@ -45,10 +45,26 @@ class Dataset(O):
         rows.append(O(cells=row))
     else:
       rows = [O(cells=row) for row in data]
-    O.__init__(self, _rows=rows, **d)
+    O.__init__(self, _rows=rows, _distances={}, **d)
 
   def get_rows(self):
     return self._rows
+
+  def get_distances(self):
+    return self._distances
+
+  def get_distance(self, one, two):
+    distances = self.get_distances().get(one.id, None)
+    if distances is None: return None
+    return distances.get(two.id, None)
+
+  def set_distance(self, one, two, distance):
+    distances = self.get_distances().get(one.id, {})
+    distances[two.id] = distance
+    self.get_distances()[one.id] = distances
+    distances = self.get_distances().get(two.id, {})
+    distances[one.id] = distance
+    self.get_distances()[two.id] = distances
 
   def effort(self, row):
     return row.cells[self.obj_meta[0].index]
