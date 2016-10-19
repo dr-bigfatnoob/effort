@@ -18,7 +18,7 @@ class Finnish(Dataset):
     return [Meta(index=0, name='hw', type=Meta.DISC, values=range(1, 4), is_obj=False),
             Meta(index=1, name='at', type=Meta.DISC, values=range(1, 6), is_obj=False),
             Meta(index=2, name='FP', type=Meta.CONT, range=(65, 1814), is_obj=False),
-            Meta(index=3, name='co', type=Meta.DISC, values=range(2, 10), is_obj=False)]
+            Meta(index=3, name='co', type=Meta.DISC, values=range(2, 11), is_obj=False)]
 
   @staticmethod
   def objective_meta():

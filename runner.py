@@ -17,6 +17,7 @@ from methods.cart import cart
 from methods.teak import teak
 from methods.knn import knn_1, knn_3
 from methods.cogee import cogee
+from methods.atlm import atlm
 from optimizer.teak_optimize import teak_optimize
 from utils.errors import *
 from utils import sk
@@ -35,8 +36,10 @@ def run(reps=1):
                     "TEAK": N(),
                     "KNN1": N(),
                     "KNN3": N(),
+                    "ATLM": N(),
                     "COGEE": N(),
-                    "O_TEAK": N()}
+                    "O_TEAK": N()
+                    }
     for score in model_scores.values():
       score.go = True
     for _ in xrange(reps):
@@ -49,6 +52,7 @@ def run(reps=1):
         model_scores["TEAK"] += error(desired_effort, teak(dataset, test, rest), all_efforts)
         model_scores["KNN1"] += error(desired_effort, knn_1(dataset, test, rest), all_efforts)
         model_scores["KNN3"] += error(desired_effort, knn_3(dataset, test, rest), all_efforts)
+        model_scores["ATLM"] += error(desired_effort, atlm(dataset, test, rest), all_efforts)
         model_scores["COGEE"] += error(desired_effort, cogee(dataset, test, rest), all_efforts)
         model_scores["O_TEAK"] += error(desired_effort, teak_optimize(dataset, test, rest), all_efforts)
     sk_data = [[key] + n.cache.all for key, n in model_scores.items()]
