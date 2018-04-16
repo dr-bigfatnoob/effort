@@ -25,6 +25,8 @@ from optimizer.teak_optimize import teak_optimize
 from utils.errors import *
 from utils import sk
 from joblib import Parallel, delayed
+from time import time
+
 
 
 datasets = [Albrecht, Desharnais, Finnish, Kemerer, Maxwell,
@@ -100,15 +102,19 @@ def run_for_dataset(dataset_class, dataset_id, reps, folds):
         print("Running for %s, rep = %d, fold = %d" % (dataset_class.__name__, rep + 1, fold_id))
         fold_id += 1
         actual_efforts = [dataset.effort(row) for row in test]
+        start = time()
         atlm_efforts = atlm(dataset, test, rest)
+        atlm_end = time()
         cart_efforts = cart(dataset, test, rest)
+        cart_end = time()
         cogee_efforts = cogee(dataset, test, rest)
+        cogee_end = time()
         atlm_mre, atlm_sa = mre_calc(atlm_efforts, actual_efforts), sa_calc(atlm_efforts, actual_efforts)
         cart_mre, cart_sa = mre_calc(cart_efforts, actual_efforts), sa_calc(cart_efforts, actual_efforts)
         cogee_mre, cogee_sa = mre_calc(cogee_efforts, actual_efforts), sa_calc(cogee_efforts, actual_efforts)
-        f.write("%d;%d;%f;%f\n" % (dataset_id, 1, atlm_mre, atlm_sa))
-        f.write("%d;%d;%f;%f\n" % (dataset_id, 2, cart_mre, cart_sa))
-        f.write("%d;%d;%f;%f\n" % (dataset_id, 3, cogee_mre, cogee_sa))
+        f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 1, atlm_mre, atlm_sa, atlm_end - start))
+        f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 2, cart_mre, cart_sa, cart_end - start))
+        f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 3, cogee_mre, cogee_sa, cogee_end - start))
   return write_file
 
 
@@ -117,7 +123,7 @@ def run_patrick(reps, folds, num_cores):
     dataset_files = Parallel(n_jobs=num_cores)(delayed(run_for_dataset)(dataset_class, dataset_id, reps, folds)
                                                for dataset_id, dataset_class in enumerate(datasets))
     with open(consolidated_file, "wb") as f:
-      f.write("dataset;method;SA;MRE\n")
+      f.write("dataset;method;SA;MRE;Runtime\n")
       for dataset_file in dataset_files:
         with open(dataset_file) as df:
           for line in df.readlines():
