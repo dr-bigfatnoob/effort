@@ -123,7 +123,7 @@ def run_patrick(reps, folds, num_cores):
           for line in df.readlines():
             if len(line) > 0:
               f.write("%s" % line)
-        os.remove(dataset_file)
+        # os.remove(dataset_file)
 
 
 # run(5)
@@ -131,7 +131,7 @@ def run_patrick(reps, folds, num_cores):
 def _main():
   reps = 10
   folds = 3
-  cores = 4
+  cores = 8
   run_patrick(reps, folds, cores)
   # run_patrick(1,2,16)
 
