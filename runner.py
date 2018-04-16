@@ -87,14 +87,16 @@ def run(reps=1):
     print("")
 
 
-def run_patrick(reps=1):
+def run_patrick(reps, folds):
   result_file = "results/patrick_sa_mre.txt"
   with open(result_file, "wb") as f:
     f.write('dataset_id;method_id;MRE;SA\n')
     for dataset_id, dataset_class in enumerate(datasets):
       dataset = dataset_class()
+      print("\n### %s (%d projects, %d decisions)" %
+            (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
       for _ in xrange(reps):
-        for test, rest in kfold(dataset.get_rows(), 3, shuffle=True):
+        for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
           say(".")
           actual_efforts = [dataset.effort(row) for row in test]
           atlm_efforts = atlm(dataset, test, rest)
@@ -106,9 +108,8 @@ def run_patrick(reps=1):
           f.write("%d;%d;%f;%f\n" % (dataset_id, 1, atlm_mre, atlm_sa))
           f.write("%d;%d;%f;%f\n" % (dataset_id, 2, cart_mre, cart_sa))
           f.write("%d;%d;%f;%f\n" % (dataset_id, 3, cogee_mre, cogee_sa))
-      print("\n### %s (%d projects, %d decisions)" %
-            (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
+
 
 # run(5)
-run_patrick(10)
+run_patrick(10, 3)
 #

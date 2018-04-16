@@ -20,8 +20,8 @@ class Kitchenhamm(Dataset):
     return [Meta(index=0, name='code', type=Meta.DISC, values=range(1, 7), is_obj=False),
             Meta(index=1, name='type', type=Meta.DISC, values=range(0, 7), is_obj=False),
             Meta(index=2, name='duration', type=Meta.CONT, range=(37, 947), is_obj=False),
-            Meta(index=3, name='function_points', type=Meta.CONT, values=range(15.36, 18138.48), is_obj=False),
-            Meta(index=3, name='estimate', type=Meta.CONT, values=range(121, 79871), is_obj=False),
+            Meta(index=3, name='function_points', type=Meta.CONT, range=(15.36, 18138.48), is_obj=False),
+            Meta(index=3, name='estimate', type=Meta.CONT, range=(121, 79871), is_obj=False),
             Meta(index=3, name='estimate_method', type=Meta.DISC, values=range(1, 7), is_obj=False)]
 
   @staticmethod
