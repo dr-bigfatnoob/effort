@@ -166,7 +166,7 @@ def sarro_cogee_dataset(dataset_class, error, folds, reps):
 
 def sarro_cogee(num_cores, folds=3, reps=10):
   datasets = [China, Desharnais, Finnish, Maxwell, Miyazaki,
-              Albrecht, Kemerer, China, ISBSG10, Kitchenhamm]
+              Albrecht, Kemerer, ISBSG10, Kitchenhamm]
   # datasets = [Miyazaki, Finnish]
   mkdir("results/sarro")
   error = msa
