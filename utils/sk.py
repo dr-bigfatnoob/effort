@@ -499,16 +499,18 @@ def rdivDemo(data):
   lo, hi = all[0], all[-1]
   line = "----------------------------------------------------"
   last = None
-  print  ('%4s , %22s ,    %s   , %4s ' % \
-               ('rank', 'name', 'med', 'iqr'))+ "\n"+ line
+  ret_list = []
+  header = ('%4s , %22s ,    %s   , %4s ' % ('rank', 'name', 'med', 'iqr'))+ "\n"+ line
+  print(header)
+  ret_list.append(header)
   for _,__,___,x in sorted(ranks, key=lambda a: (a[0], a[1], a[2])):
     q1,q2,q3 = x.quartiles()
     #xtile(x.all,lo=lo,hi=hi,width=30,show="%5.2f")
-    print  ('%1s , %22s , %4s , %4s ' % \
-                 (x.rank+1, x.name, q2, q3 - q1))  \
-           # + \
-           #    xtile(x,lo=lo,hi=hi,width=30,show="%5.2f")
-    last = x.rank 
+    print_stmt = ('%1s , %22s , %4s , %4s ' % (x.rank+1, x.name, q2, q3 - q1))
+    ret_list.append(print_stmt)
+    print(print_stmt)
+    last = x.rank
+  return "\n".join(ret_list)
 """
 
 The demos:

@@ -163,3 +163,17 @@ class Cache:
       self._has = O(median=med, iqr=iqr,
                     lo=self.all[0], hi=self.all[-1])
     return self._has
+
+
+def mkdir(folder):
+  """
+  Create folder if it does not exist
+  :param folder:
+  :return:
+  """
+  if not os.path.exists(folder):
+    try:
+      os.makedirs(folder)
+    except OSError, e:
+      if e.errno != os.errno.EEXIST:
+        raise

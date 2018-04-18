@@ -132,14 +132,69 @@ def run_patrick(reps, folds, num_cores):
         # os.remove(dataset_file)
 
 
-# run(5)
+
+def sarro_cogee_dataset(dataset_class, error, folds, reps):
+  dataset = dataset_class()
+  print("\n### %s (%d projects, %d decisions)" %
+        (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
+  model_scores = {"CART": N(),
+                  "ATLM": N(),
+                  "COGEE": N()
+                  }
+  for score in model_scores.values():
+    score.go = True
+  for _ in range(reps):
+    for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
+      say(".")
+      desired_effort = [dataset.effort(row) for row in test]
+      all_efforts = [dataset.effort(one) for one in rest]
+      model_scores["CART"] += error(desired_effort, cart(dataset, test, rest), all_efforts)
+      model_scores["ATLM"] += error(desired_effort, atlm(dataset, test, rest), all_efforts)
+      model_scores["COGEE"] += error(desired_effort, cogee(dataset, test, rest), all_efforts)
+  sk_data = [[key] + n.cache.all for key, n in model_scores.items()]
+  print("```")
+  stat = sk.rdivDemo(sk_data)
+  print("```")
+  print("")
+  write_file = "%s/%s.txt" % ("results/sarro", dataset_class.__name__)
+  with open(write_file, "wb") as f:
+    f.write("\n### %s (%d projects, %d decisions)\n" %
+        (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
+    f.write("```\n%s\n```\n\n" % stat)
+  return write_file
+
+
+def sarro_cogee(num_cores, folds=3, reps=10):
+  datasets = [China, Desharnais, Finnish, Maxwell, Miyazaki,
+              Albrecht, Kemerer, China, ISBSG10, Kitchenhamm]
+  # datasets = [Miyazaki, Finnish]
+  mkdir("results/sarro")
+  error = msa
+  dataset_files = Parallel(n_jobs=num_cores)(delayed(sarro_cogee_dataset)(dataset_class, error, folds, reps)
+                                             for dataset_id, dataset_class in enumerate(datasets))
+  consolidated_file = "results/sarro/sa.md"
+  with open(consolidated_file, "wb") as f:
+    for dataset_file in dataset_files:
+      with open(dataset_file) as df:
+        for line in df.readlines():
+          f.write(line)
+
+
+def _sarro():
+  reps = 10
+  folds = 3
+  cores = 16
+  sarro_cogee(cores, folds, reps)
+
 
 def _main():
   reps = 10
   folds = 3
-  cores = 8
+  cores = 16
   run_patrick(reps, folds, cores)
   # run_patrick(1,2,16)
 
+
 if __name__ == "__main__":
-  _main()
+  # _main()
+  _sarro()
