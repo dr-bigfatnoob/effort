@@ -123,7 +123,7 @@ def run_for_dataset(dataset_class, dataset_id, reps):
 def run_patrick(reps, num_cores):
     consolidated_file = "results/patrick_sa_mre.txt"
     dataset_files = Parallel(n_jobs=num_cores)(delayed(run_for_dataset)(dataset_class, dataset_id, reps)
-                                               for dataset_id, dataset_class in enumerate(datasets[:1]))
+                                               for dataset_id, dataset_class in enumerate(datasets))
     with open(consolidated_file, "wb") as f:
       f.write("dataset;method;SA;MRE;Runtime\n")
       for dataset_file in dataset_files:
@@ -189,7 +189,7 @@ def _sarro():
 
 
 def _main():
-  reps = 1
+  reps = 20
   cores = 16
   run_patrick(reps, cores)
   # run_patrick(1,2,16)
