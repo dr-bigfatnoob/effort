@@ -101,6 +101,7 @@ def run_for_dataset(dataset_class, dataset_id, reps, folds):
       for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
         print("Running for %s, rep = %d, fold = %d" % (dataset_class.__name__, rep + 1, fold_id))
         fold_id += 1
+        all_efforts = [dataset.effort(one) for one in rest]
         actual_efforts = [dataset.effort(row) for row in test]
         start = time()
         atlm_efforts = atlm(dataset, test, rest)
@@ -109,9 +110,9 @@ def run_for_dataset(dataset_class, dataset_id, reps, folds):
         cart_end = time()
         cogee_efforts = cogee(dataset, test, rest)
         cogee_end = time()
-        atlm_mre, atlm_sa = mre_calc(atlm_efforts, actual_efforts), sa_calc(atlm_efforts, actual_efforts)
-        cart_mre, cart_sa = mre_calc(cart_efforts, actual_efforts), sa_calc(cart_efforts, actual_efforts)
-        cogee_mre, cogee_sa = mre_calc(cogee_efforts, actual_efforts), sa_calc(cogee_efforts, actual_efforts)
+        atlm_mre, atlm_sa = mre_calc(atlm_efforts, actual_efforts), msa(actual_efforts, atlm_efforts, all_efforts)
+        cart_mre, cart_sa = mre_calc(cart_efforts, actual_efforts), msa(actual_efforts, cart_efforts, all_efforts)
+        cogee_mre, cogee_sa = mre_calc(cogee_efforts, actual_efforts), msa(actual_efforts, cogee_efforts, all_efforts)
         f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 1, atlm_mre, atlm_sa, atlm_end - start))
         f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 2, cart_mre, cart_sa, cart_end - start))
         f.write("%d;%d;%f;%f;%f\n" % (dataset_id, 3, cogee_mre, cogee_sa, cogee_end - start))
@@ -196,5 +197,5 @@ def _main():
 
 
 if __name__ == "__main__":
-  # _main()
-  _sarro()
+  _main()
+  # _sarro()

@@ -47,7 +47,7 @@ def msa(*args):
   assert len(args[0]) == len(args[1])
   mae = sum([abs(actual - predicted) for actual, predicted in zip(args[0], args[1])]) / len(args[0])
   mae_guess = sum([abs(choice(args[0]) - choice(args[2])) for _ in range(1000)]) / 1000
-  if mae_guess < mae: return 0
+  # if mae_guess < mae: return 0
   return 1 - (mae / mae_guess)
 
 
