@@ -90,12 +90,13 @@ def run(reps=1):
     print("")
 
 
-def run_for_dataset(dataset_class, dataset_id, reps, folds):
+def run_for_dataset(dataset_class, dataset_id, reps):
   write_file = "results/%s_sa_mre.txt" % dataset_class.__name__
   with open(write_file, "wb") as f:
     dataset = dataset_class()
     print("\n### %s (%d projects, %d decisions)" %
           (dataset_class.__name__, len(dataset.get_rows()), len(dataset.dec_meta)))
+    folds = 3 if len(dataset.get_rows()) < 40 else 10
     for rep in range(reps):
       fold_id = 0
       for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
@@ -119,10 +120,10 @@ def run_for_dataset(dataset_class, dataset_id, reps, folds):
   return write_file
 
 
-def run_patrick(reps, folds, num_cores):
+def run_patrick(reps, num_cores):
     consolidated_file = "results/patrick_sa_mre.txt"
-    dataset_files = Parallel(n_jobs=num_cores)(delayed(run_for_dataset)(dataset_class, dataset_id, reps, folds)
-                                               for dataset_id, dataset_class in enumerate(datasets))
+    dataset_files = Parallel(n_jobs=num_cores)(delayed(run_for_dataset)(dataset_class, dataset_id, reps)
+                                               for dataset_id, dataset_class in enumerate(datasets[:1]))
     with open(consolidated_file, "wb") as f:
       f.write("dataset;method;SA;MRE;Runtime\n")
       for dataset_file in dataset_files:
@@ -131,7 +132,6 @@ def run_patrick(reps, folds, num_cores):
             if len(line) > 0:
               f.write("%s" % line)
         # os.remove(dataset_file)
-
 
 
 def sarro_cogee_dataset(dataset_class, error, folds, reps):
@@ -189,10 +189,9 @@ def _sarro():
 
 
 def _main():
-  reps = 10
-  folds = 3
+  reps = 1
   cores = 16
-  run_patrick(reps, folds, cores)
+  run_patrick(reps, cores)
   # run_patrick(1,2,16)
 
 
