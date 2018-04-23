@@ -17,12 +17,11 @@ class Miyazaki(Dataset):
   def decision_meta():
     return [Meta(index=0, name="SCRN", type=Meta.CONT, range=(0, 281), is_obj=False),
             Meta(index=1, name="FORM", type=Meta.CONT, range=(0, 91), is_obj=False),
-            Meta(index=2, name="FILE", type=Meta.CONT, range=(2, 370), is_obj=False),
-            Meta(index=3, name="KLOC", type=Meta.CONT, range=(5.6, 1586), is_obj=False)]
+            Meta(index=2, name="FILE", type=Meta.CONT, range=(2, 370), is_obj=False)]
 
   @staticmethod
   def objective_meta():
-    return [Meta(index=4, name="MM", type=Meta.CONT, range=(583, 63694), is_obj=True)]
+    return [Meta(index=3, name="Effort", type=Meta.CONT, range=(896, 253760), is_obj=True)]
 
   @staticmethod
   def data():

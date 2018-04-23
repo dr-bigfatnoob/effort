@@ -15,14 +15,14 @@ class Finnish(Dataset):
 
   @staticmethod
   def decision_meta():
-    return [Meta(index=0, name='hw', type=Meta.DISC, values=range(1, 4), is_obj=False),
-            Meta(index=1, name='at', type=Meta.DISC, values=range(1, 6), is_obj=False),
+    return [Meta(index=0, name='HW', type=Meta.DISC, values=range(1, 4), is_obj=False),
+            Meta(index=1, name='AR', type=Meta.DISC, values=range(1, 6), is_obj=False),
             Meta(index=2, name='FP', type=Meta.CONT, range=(65, 1814), is_obj=False),
-            Meta(index=3, name='co', type=Meta.DISC, values=range(2, 11), is_obj=False)]
+            Meta(index=3, name='CO', type=Meta.DISC, values=range(2, 11), is_obj=False)]
 
   @staticmethod
   def objective_meta():
-    return [Meta(index=4, name="Effort", type=Meta.CONT, range=(6.13, 10.2), is_obj=True)]
+    return [Meta(index=4, name="Effort", type=Meta.CONT, range=(460, 26670), is_obj=True)]
 
   @staticmethod
   def data():
