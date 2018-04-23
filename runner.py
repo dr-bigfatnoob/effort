@@ -192,7 +192,7 @@ def _sarro():
 
 def _main():
   reps = 20
-  cores = 4
+  cores = 16
   consolidated_file = "results/patrick_sa_mre_mini.txt"
   run_patrick(reps, cores, consolidated_file)
   # run_patrick(1,2,16)
