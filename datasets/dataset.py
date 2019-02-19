@@ -41,7 +41,7 @@ class Dataset(O):
           if meta.type == Meta.CONT:
             row.append(float(cell))
           else:
-            row.append(cell)
+            row.append(str(int(cell)))
         rows.append(O(cells=row))
     else:
       rows = [O(cells=row) for row in data]
@@ -84,3 +84,24 @@ def read_csv(file_path, read_header=False):
   if read_header:
     return lst
   return lst[1:]
+
+
+def read_pandas_dataframe(df, read_header=False):
+  headers = list(df.columns)
+  values = df.values.tolist()
+  rows = []
+  for row in values:
+    rows.append(map(parse_string, row))
+  if read_header:
+    return [headers] + rows
+  return values
+
+
+def parse_string(s):
+  try:
+    return int(s)
+  except ValueError:
+    try:
+      return float(s)
+    except ValueError:
+      return s

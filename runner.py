@@ -4,15 +4,26 @@ import os
 sys.path.append(os.path.abspath("."))
 sys.dont_write_bytecode = True
 
-from datasets.albrecht import Albrecht
-from datasets.china import China
-from datasets.desharnais import Desharnais
-from datasets.finnish import Finnish
-from datasets.isbsg10 import ISBSG10
-from datasets.kemerer import Kemerer
-from datasets.kitchenhamm import Kitchenhamm
-from datasets.maxwell import Maxwell
-from datasets.miyazaki import Miyazaki
+# from datasets.albrecht import Albrecht
+# from datasets.china import China
+# from datasets.desharnais import Desharnais
+# from datasets.finnish import Finnish
+# from datasets.isbsg10 import ISBSG10
+# from datasets.kemerer import Kemerer
+# from datasets.kitchenhamm import Kitchenhamm
+# from datasets.maxwell import Maxwell
+# from datasets.miyazaki import Miyazaki
+
+from datasets.cleaned.albrecht import Albrecht
+from datasets.cleaned.china import China
+from datasets.cleaned.desharnais import Desharnais
+from datasets.cleaned.finnish import Finnish
+from datasets.cleaned.isbsg10 import ISBSG10
+from datasets.cleaned.kemerer import Kemerer
+from datasets.cleaned.kitchenhamm import Kitchenhamm
+from datasets.cleaned.maxwell import Maxwell
+from datasets.cleaned.miyazaki import Miyazaki
+
 from utils.lib import *
 from utils.validation import *
 from methods.peeking import peeking2
@@ -26,7 +37,6 @@ from utils.errors import *
 from utils import sk
 from joblib import Parallel, delayed
 from time import time
-
 
 
 datasets = [Albrecht, Desharnais, Finnish, Kemerer, Maxwell,
@@ -97,7 +107,8 @@ def run_for_dataset(dataset_class, dataset_id, reps):
     dataset_name = dataset_class.__name__
     print("\n### %s (%d projects, %d decisions)" %
           (dataset_name, len(dataset.get_rows()), len(dataset.dec_meta)))
-    folds = 3 if len(dataset.get_rows()) < 40 else 10
+    # folds = 3 if len(dataset.get_rows()) < 40 else 10
+    folds = 3
     for rep in range(reps):
       fold_id = 0
       for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
@@ -122,8 +133,8 @@ def run_for_dataset(dataset_class, dataset_id, reps):
 
 
 def run_patrick(reps, num_cores, consolidated_file="results/patrick_sa_mre.txt"):
-  # local_datasets = datasets
-  local_datasets = [Finnish, Miyazaki, Maxwell]
+  local_datasets = datasets
+  # local_datasets = [Miyazaki]
   dataset_files = Parallel(n_jobs=num_cores)(delayed(run_for_dataset)(dataset_class, dataset_id, reps)
                                              for dataset_id, dataset_class in enumerate(local_datasets))
   with open(consolidated_file, "wb") as f:
@@ -183,6 +194,35 @@ def sarro_cogee(num_cores, folds=3, reps=10):
           f.write(line)
 
 
+def run_patrick_v2():
+  reps = 20
+  folds = 3
+  contents = []
+  for dataset_class in datasets:
+    dataset = dataset_class()
+    dataset_name = dataset_class.__name__
+    start = time()
+    atlm_mres, atlm_sas = [], []
+    for rep in range(reps):
+      fold_id = 0
+      for test, rest in kfold(dataset.get_rows(), folds, shuffle=True):
+        print("Running for %s, rep = %d, fold = %d" % (dataset_name, rep + 1, fold_id))
+        fold_id += 1
+        all_efforts = [dataset.effort(one) for one in rest]
+        actual_efforts = [dataset.effort(row) for row in test]
+        atlm_efforts = atlm(dataset, test, rest)
+        atlm_mre, atlm_sa = mre_calc(atlm_efforts, actual_efforts), msa(actual_efforts, atlm_efforts, all_efforts)
+        atlm_mres.append(atlm_mre)
+        atlm_sas.append(atlm_sa)
+    end = time()
+    content = "dataset: %s\ntotal runtime: %f\n" % (dataset_name, end - start)
+    content += "\nMRE\n" + " ".join(map(str, atlm_mres)) + "\n"
+    content += "\nSA\n" + " ".join(map(str, atlm_sas)) + "\n"
+    contents.append(content)
+  with open("results/patrick_sa_mre_v2.txt", "wb") as f:
+    f.write("\n########################################\n\n".join(contents))
+
+
 def _sarro():
   reps = 10
   folds = 3
@@ -191,11 +231,11 @@ def _sarro():
 
 
 def _main():
-  reps = 20
-  cores = 16
-  consolidated_file = "results/patrick_sa_mre_mini.txt"
-  run_patrick(reps, cores, consolidated_file)
-  # run_patrick(1,2,16)
+  # reps = 20
+  # cores = 16
+  # consolidated_file = "results/patrick_sa_mre_v2.txt"
+  # run_patrick(reps, cores, consolidated_file)
+  run_patrick_v2()
 
 
 if __name__ == "__main__":
